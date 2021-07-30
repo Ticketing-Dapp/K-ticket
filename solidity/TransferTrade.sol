@@ -34,7 +34,7 @@ contract TransferTrade {
     }
 
     /**
-    * @dev 티켓 구매 설정
+    * @dev 티켓 구매시 구매자의 주소에 티켓을 매핑하는 함수 - pay 함수 아직 사용 안 함
     * @param t : 구매하고자 하는 티켓
     * @param addr : 구매자
      */
