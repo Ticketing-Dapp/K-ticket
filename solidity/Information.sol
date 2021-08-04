@@ -32,4 +32,17 @@ contract Information {
         uint8 minute;
     }
 
+    struct Theater{
+        uint8 vipNum;
+        uint8 rNum;
+        uint8 aNum;
+    }
+
+    Theater one = Theater(3,5,7);
+    Theater two = Theater(3,5,4);
+    Theater three = Theater(4,6,8);
+    
+    Theater[] public theaters = [one, two, three];
+
+    
 }

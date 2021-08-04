@@ -5,7 +5,7 @@ import "./Information.sol";
 
 contract TransferTrade {
 
-    mapping(address => Ticket) public TicketStore;
+    mapping(address => Information.Ticket) public TicketStore;
 
     // 상수
     uint256 constant internal TICKET_PRICE = 5 * 10 ** 15;
