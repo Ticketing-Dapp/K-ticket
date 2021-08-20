@@ -7,10 +7,13 @@ contract Information {
         ConcertInfo concertInfo;
         Seat seat;
         bool isTransferred; // 양도거래가 가능할 때 false, 양도거래가 이미 진행되고 있을 때 true
+        bool isSold;
+        address ticketOwner;
     }
 
     struct ConcertInfo {
         string concertName;
+        uint8 concertTheater;
         Date date;
         Time time;
     }
