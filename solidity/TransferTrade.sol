@@ -15,7 +15,7 @@ contract TransferTrade {
     address payable public transferee;
     Information.Ticket public ticket;
 
-    // 디폴트 티켓 생성
+    /** 디폴트 티켓 생성
     Seat public defaultSeat = Seat("VIP", 30, TICKET_PRICE);
     Date public defaultDate = Date(2021, 6, 18);
     Time public defaultTime = Time(18, 0);
@@ -23,6 +23,7 @@ contract TransferTrade {
     Ticket public defaultTicket = Ticket(defaultConcertInfo, defaultSeat, false);
 
     address defaultAddr = 0x1c049AC608CB6B8B748Ed0449B9d592b9CDe2314;
+    */
 
     // 이벤트
     event GetMyTransferringTicket(string concertName, string day, string time, string typeOfSeat, uint32 seatNumber, uint32 ticketPrice);
@@ -37,9 +38,7 @@ contract TransferTrade {
 
     /**
     * @dev Ticket 가져오기
-    * @param _concertInfo
-    * @param Seat (_type, _number)
-    *        티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * _concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
     * @return Ticket을 반환한다.
     */
     function getTicket(Information.ConcertInfo _concertInfo, string _type, uint8 _number) public returns (Ticket){
@@ -60,9 +59,7 @@ contract TransferTrade {
     /**
     * @dev 변화된 티켓을 매핑에 반영
     *      양도거래 혹은 티켓구매를 통해 소유주가 변한 티켓을 매핑에 반영한다.
-    * @param _concertInfo
-    * @param Seat (_type, _number)
-    *        티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * _concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function setTicket(Information.ConcertInfo _concertInfo, string _type, uint8 _number) public{
         temp = RegisterConcert.ConcertTickets[_concertInfo];
@@ -83,9 +80,8 @@ contract TransferTrade {
     /**
     * @dev 티켓 구매 처리 함수
     *      아직 구매가 완료되지 않은 티켓에 대해서 공연 등록자에게 돈을 지불하고, 티켓의 주인을 티켓 구매자로 변경한다.
-    * @param concertInfo _concertName, _concertTheater, Date(_year, _month, _day), Time(_hour, _minute)
-    * @param Seat (_type, _number)
-             티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * concertInfo (_concertName, _concertTheater, Date(_year, _month, _day), Time(_hour, _minute))
+    * concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function buyTicket(string _concertName, uint8 _concertTheater, uint16 _year, uint8 _month, uint8 _day, uint8 _hour, uint8 _minute, string _type, uint8 _number) public payable {
         date = Information.Date(_year, _month, _day);
@@ -103,9 +99,8 @@ contract TransferTrade {
     * @dev 양도 신청 처리 함수
     *      양도 거래가 신청된 티켓에 대해서 양도인에게 돈을 지불하고, 티켓의 주인을 양수인으로 변경한다.
     *      이때, 양도인이 여러 개의 티켓을 가지고 있을 수 있으므로, 양도 거래가 완료된 티켓을 제외한 다른 티켓들은 소유주가 변하지 않도록 한다.
-    * @param concertInfo _concertName, _concertTheater, Date(_year, _month, _day), Time(_hour, _minute)
-    * @param Seat (_type, _number)
-             티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * concertInfo (_concertName, _concertTheater, Date(_year, _month, _day), Time(_hour, _minute))
+    * concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function transferApplication(string _concertName, uint8 _concertTheater, uint16 _year, uint8 _month, uint8 _day, uint8 _hour, uint8 _minute, string _type, uint8 _number) public payable returns (bool){
         date = Information.Date(_year, _month, _day);
