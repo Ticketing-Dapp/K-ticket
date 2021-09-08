@@ -7,6 +7,7 @@ import "./RegisterConcert.sol";
 contract TransferTrade {
 
     mapping(address => Information.Ticket) public TicketStore; // 1인 1티켓
+    mapping(address => Information.Ticket) public TransferTicketStore; // 양도 거래 중인 ticket
 
     // 상수
     uint256 constant internal TICKET_PRICE = 5 * 10 ** 15;
@@ -38,7 +39,8 @@ contract TransferTrade {
 
     /**
     * @dev Ticket 가져오기
-    * _concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * @param register 공연 등록자의 지갑 주소를 알면 티켓을 찾아올 수 있다.
+    * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     * @return Ticket을 반환한다.
     */
     function getTicket(address register, string memory _type, uint8 _number) public returns (Ticket){
@@ -58,7 +60,8 @@ contract TransferTrade {
     /**
     * @dev 변화된 티켓을 공연 등록자의 티켓 매핑에 반영
     *      양도거래 혹은 티켓구매를 통해 소유주가 변한 티켓을 매핑에 반영한다.
-    * _concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * @param register 공연 등록자의 지갑 주소를 알면 티켓을 찾아올 수 있다.
+    * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function setTicket(address register, string _type, uint8 _number) public{
         Information.Ticket[] temp = RegisterConcert.MyConcerts[register];
@@ -93,16 +96,17 @@ contract TransferTrade {
     /**
     * @dev 양도 신청 처리 함수
     *      양도 거래가 신청된 티켓에 대해서 양도인에게 돈을 지불하고, 티켓의 주인을 양수인으로 변경한다.
-    *      이때, 양도인이 여러 개의 티켓을 가지고 있을 수 있으므로, 양도 거래가 완료된 티켓을 제외한 다른 티켓들은 소유주가 변하지 않도록 한다.
     * @param register 공연 등록자의 티켓 관리 매핑 MyConcerts에 반영하기 위해서 사용
     * @param trader 양도인에게 돈을 지불하고, 양도인의 티켓 매핑을 삭제하기 위해서 사용 
-    * concertInfo, Seat (_type, _number) : 티켓을 특정하기 위해 concertInfo와 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function transferTicket(address register, address trader, string _type, uint8 _number) public payable returns (bool){
         ticket = getTicket(trader, _type, _number);
         require(ticket.isTransferred == false, "Already ticket is transferred");
+        //TransferTicketStore[trader] = ticket; 양도인이 글을 올렸을 때 해야 함
         transferPay(ticket);
-
+        delete TransferTicketStore[trader];
+        delete TransferTicketStore[transferee];
         delete TicketStore[trader];
         TicketStore[transferee] = ticket;
         setTicket(register, _type, _number);
@@ -124,11 +128,13 @@ contract TransferTrade {
     /**
     * @dev 양수인의 계좌에서 티켓 가격을 받아 양도인에게 송금한다.
     *      양도거래가 진행되는 상태이므로, isTransferred를 true로 변경하여 양도거래가 중복되지 않도록 한다.
+    *      양도거래 진행 중이므로 TransferTicketStore에 추가한다.
     */
     function transferPay() public payable {
         // 현재 가나슈를 실행중이 아니라서 ticket info의 owner 정보가 없어서 주석처리함
         require(msg.value == ticket.seat.ticketPrice, "Not enough ETH");
         ticket.isTransferred = true;
+        TransferTicketStore[msg.sender] = ticket
         ticket.ticketOwner.transfer(ticket.seat.ticketPrice);
         ticket.ticketOwner = transferee;
     }
@@ -138,6 +144,48 @@ contract TransferTrade {
     */
     function stringCompare(string memory _string1, string memory _string2) public view returns (bool) {
         return (keccak256(abi.encodePacked((_string1))) == keccak256(abi.encodePacked((_string2))));
+    }
+
+    /** 
+    * @dev 마이페이지에서 소유하고 있는 티켓을 보여준다.
+    * @return 콘서트정보와 좌석정보를 반환한다.
+    */ 
+    function getMyTicket() public returns (string memory, uint8 memory, uint16 memory, uint8 memory, uint8 memory, uint8 memory, uint8 memory, string memory, uint32 memory, uint32 memory){
+        myticket = TicketStore[msg.sender];
+        require(myticket.Seat.seatNumber != 0, "empty");
+        string memory concertName = myticket.concertInfo.concertName;
+        uint8 memory concertTheater = myticket.concertInfo.concertTheater;
+        uint16 memory concertYear = myticket.concertInfo.date.year;
+        uint8 memory concertMonth = myticket.concertInfo.date.month;
+        uint8 memory concertDay = myticket.concertInfo.date.day;
+        uint8 memory concertHour = myticket.concertInfo.time.hour;
+        uint8 memory concertMinute = myticket.concertInfo.time.minute;
+        string memory concertTypeOfSeat = myticket.Seat.typeOfSeat;
+        uint32 memory concertSeatNumber = myticket.Seat.seatNumber;
+        uint32 memory concertTicketPrice = myticket.Seat.TicketPrice;
+        
+        return (concertName, concertTheater, concertYear, concertMonth, concertDay, concertHour, concertMinute, concertTypeOfSeat, ConcertSeatNumber, ConcertTicketPrice);
+    }
+
+    /** 
+    * @dev 마이페이지에서 양도거래 중인 티켓을 보여준다.
+    * @return 콘서트정보와 좌석정보를  반환한다.
+    */ 
+    function getMyTransferringTicket() public returns (string memory, uint8 memory, uint16 memory, uint8 memory, uint8 memory, uint8 memory, uint8 memory, string memory, uint32 memory, uint32 memory){
+        myticket = TransferTicketStore[msg.sender];
+        require(myticket.Seat.seatNumber != 0, "empty");
+        string memory concertName = myticket.concertInfo.concertName;
+        uint8 memory concertTheater = myticket.concertInfo.concertTheater;
+        uint16 memory concertYear = myticket.concertInfo.date.year;
+        uint8 memory concertMonth = myticket.concertInfo.date.month;
+        uint8 memory concertDay = myticket.concertInfo.date.day;
+        uint8 memory concertHour = myticket.concertInfo.time.hour;
+        uint8 memory concertMinute = myticket.concertInfo.time.minute;
+        string memory concertTypeOfSeat = myticket.Seat.typeOfSeat;
+        uint32 memory concertSeatNumber = myticket.Seat.seatNumber;
+        uint32 memory concertTicketPrice = myticket.Seat.TicketPrice;
+        
+        return (concertName, concertTheater, concertYear, concertMonth, concertDay, concertHour, concertMinute, concertTypeOfSeat, ConcertSeatNumber, ConcertTicketPrice);
     }
 
     /**
@@ -179,41 +227,6 @@ contract TransferTrade {
 }
 */
 
-/**
-    ... 수정해서 써야 하는 함수들
-
-    // @dev 마이페이지에서 진행중인 양도거래 티켓을 보여준다.
-    //      (지불이 끝나야 거래 성사가 되는 것이기 때문에, 이는 양도인에게만 보여주면 된다.)
-    // @return 콘서트 이름을 반환한다. (이는 테스트를 위한 용도이다.)
-    //
-    function getMyTransferringTicket() public returns (string memory){
-        Ticket[] ticketList = TicketStore[msg.sender];
-        Ticket[] transferredTicket;
-        for(uint i=0; i<TicketList.length; i++){
-            // 양도거래 글이 작성되었다는 것을 isTransferred라는 함수로 알 수 없음.
-            if(ticketList[i].isTransferred == true){
-                transferredTicket.push(ticketList[i]);
-            }
-        }
-        // 티켓을 어떻게 넘겨줄 수 있을까?
-        // 양도거래 티켓이 여러 개면 어떻게 넘겨줄 수 있는지 모르겠다.
-
-        string memory name = defaultTicket.concertName;
-        return name;
-    }
-
-    //
-    // @dev 마이페이지에서 소유하고 있는 티켓을 보여준다.
-    // @return 콘서트 이름과 현재 티켓 소유주를 반환한다. (이는 테스트를 위한 용도이다.)
-    // 
-    function getMyTicket() public returns (string memory, address){
-        require(msg.sender == defaultTicket.owner, "You aren't owner.. So it's impossible confirm.");
-        emit GetMyTicket(defaultTicket.concertName, defaultTicket.day, defaultTicket.time, defaultTicket.seat.typeOfSeat, defaultTicket.seat.seatNumber, defaultTicket.ticketPrice);
-        string memory name = defaultTicket.concertName;
-        address ownerAddress = defaultTicket.owner;
-        return (name, ownerAddress);
-    }
-*/
 /**
     ... 현재 쓰지 않는 함수들
     
