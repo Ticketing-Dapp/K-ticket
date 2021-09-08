@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity ^0.8.7;
 pragma experimental ABIEncoderV2;
 
 import "./Information.sol";
@@ -10,6 +10,7 @@ contract RegisterConcert{
     Information.Date public date;
     Information.Time public time;
     Information.ConcertInfo public concertInfo;
+    bool[] public sell;
 
     /**
      * @dev 입력받은 콘서트 정보를 설정한다.
@@ -46,24 +47,21 @@ contract RegisterConcert{
         
     }
 
-    function getConcertTicket(string _concertName, uint8 _concertTheater, uint16 _year, uint8 _month, uint8 _day, uint8 _hour, uint8 _minute) public returns (bool[][]){
+    function getConcertTicket(string _concertName, uint8 _concertTheater, uint16 _year, uint8 _month, uint8 _day, uint8 _hour, uint8 _minute) public returns (bool[]){
         date = Information.Date(_year, _month, _day);
         time = Information.Time(_hour, _minute);
-        _concertInfo = Information.ConcertInfo(_concertName, _concertTheater, date, time);
-        Ticket[] _tickets = ConcertTicket[_concertInfo];
+        concertInfo = Information.ConcertInfo(_concertName, _concertTheater, date, time);
+        Information.Ticket[] _tickets = ConcertTicket[concertInfo];
         
         uint16 length = Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].aNum; 
-        bool[] public sell = new bool[length];
+        sell = new bool[length];
         for(uint i = 0; i < length; i++){
             if (_tickets[i].isSold){/**이미 팔렸으면 true */
-                sell[i] = false     
+                sell[i] = false;     
             }else{
-                sell[i] = true
+                sell[i] = true;
             }
         }
-
+        return sell;
     }
-
-
-
 }

@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity ^0.8.7;
 pragma experimental ABIEncoderV2;
 
 import "./Information.sol";
@@ -19,7 +19,7 @@ contract TransferTrade {
     Seat public defaultSeat = Seat("VIP", 30, TICKET_PRICE);
     Date public defaultDate = Date(2021, 6, 18);
     Time public defaultTime = Time(18, 0);
-    ConcertInfo public defaultConcertInfo = ConcertInfo("오마이걸", defaultDate, defaultTime);
+    ConcertInfo public defaultConcertInfo = ConcertInfo("ohmygirl", defaultDate, defaultTime);
     Ticket public defaultTicket = Ticket(defaultConcertInfo, defaultSeat, false);
 
     address defaultAddr = 0x1c049AC608CB6B8B748Ed0449B9d592b9CDe2314;
