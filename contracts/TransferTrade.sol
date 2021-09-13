@@ -154,18 +154,10 @@ contract TransferTrade is Information{
     function getMyTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, string memory, uint32, uint32){
         Information.Ticket memory myticket = TicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
-        string memory concertName = myticket.concertInfo.concertName;
-        uint8 concertTheater = myticket.concertInfo.concertTheater;
-        uint16 concertYear = myticket.concertInfo.date.year;
-        uint8 concertMonth = myticket.concertInfo.date.month;
-        uint8 concertDay = myticket.concertInfo.date.day;
-        uint8 concertHour = myticket.concertInfo.time.hour;
-        uint8 concertMinute = myticket.concertInfo.time.minute;
-        string memory concertTypeOfSeat = myticket.seat.typeOfSeat;
-        uint32 concertSeatNumber = myticket.seat.seatNumber;
-        uint32 concertTicketPrice = myticket.seat.ticketPrice;
         
-        return (concertName, concertTheater, concertYear, concertMonth, concertDay, concertHour, concertMinute, concertTypeOfSeat, concertSeatNumber, concertTicketPrice);
+        return (myticket.concertInfo.concertName, myticket.concertInfo.concertTheater, myticket.concertInfo.date.year,
+        myticket.concertInfo.date.month, myticket.concertInfo.date.day, myticket.concertInfo.time.hour, myticket.concertInfo.time.minute,
+        myticket.seat.typeOfSeat, myticket.seat.seatNumber, myticket.seat.ticketPrice);
     }
 
     /** 
@@ -175,18 +167,10 @@ contract TransferTrade is Information{
     function getMyTransferringTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, string memory, uint32, uint32){
         Information.Ticket memory myticket = TransferTicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
-        string memory concertName = myticket.concertInfo.concertName;
-        uint8 concertTheater = myticket.concertInfo.concertTheater;
-        uint16 concertYear = myticket.concertInfo.date.year;
-        uint8 concertMonth = myticket.concertInfo.date.month;
-        uint8 concertDay = myticket.concertInfo.date.day;
-        uint8 concertHour = myticket.concertInfo.time.hour;
-        uint8 concertMinute = myticket.concertInfo.time.minute;
-        string memory concertTypeOfSeat = myticket.seat.typeOfSeat;
-        uint32 concertSeatNumber = myticket.seat.seatNumber;
-        uint32 concertTicketPrice = myticket.seat.ticketPrice;
         
-        return (concertName, concertTheater, concertYear, concertMonth, concertDay, concertHour, concertMinute, concertTypeOfSeat, concertSeatNumber, concertTicketPrice);
+        return (myticket.concertInfo.concertName, myticket.concertInfo.concertTheater, myticket.concertInfo.date.year,
+        myticket.concertInfo.date.month, myticket.concertInfo.date.day, myticket.concertInfo.time.hour, myticket.concertInfo.time.minute,
+        myticket.seat.typeOfSeat, myticket.seat.seatNumber, myticket.seat.ticketPrice);
     }
 }
 
