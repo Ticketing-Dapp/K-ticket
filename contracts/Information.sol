@@ -2,13 +2,13 @@ pragma solidity >=0.8.7<0.9.0;
 pragma experimental ABIEncoderV2;
 
 contract Information {
-
+    mapping(address => Ticket[]) public MyConcerts;
     struct Ticket {
         ConcertInfo concertInfo;
         Seat seat;
-        bool isTransferred; // 양도거래가 가능할 때 false, 양도거래가 이미 진행되고 있을 때 true
+        bool isTransferred;// 양도거래가 가능할 때 false, 양도거래가 이미 진행되고 있을 때 true
         bool isSold;
-        address ticketOwner;
+        address payable ticketOwner;
     }
 
     struct ConcertInfo {
@@ -40,12 +40,16 @@ contract Information {
         uint8 rNum;
         uint8 aNum;
     }
-
+/**
+    이거 안됨
     Theater one = Theater(3,5,7);
     Theater two = Theater(3,5,4);
     Theater three = Theater(4,6,8);
     
-    Theater[] public theaters = [one, two, three];
+    Theater[] public theaters;
+    theaters.push(Theater(3,5,7));
+
+ */
 
     
 }

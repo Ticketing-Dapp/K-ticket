@@ -8,7 +8,7 @@ contract RegisterConcert is Information{
     * 공연등록자 mypage에서 보여줄 때 사용
     * 공연 등록은 한 개로 제한한다.
     */
-    mapping(address => Information.Ticket[]) public MyConcerts;
+    
     Information.Ticket[] public Tickets;
     Information.Date public date;
     Information.Time public time;
@@ -30,22 +30,22 @@ contract RegisterConcert is Information{
     *      그리고 이를 공연등록자가 관리할 수 있도록 MyConcerts 매핑에 추가한다.
     */
     function setTickets(uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice) public{
-        Information.Theater storage _theater = Information.theaters[concertInfo.concertTheater];
+        Information.Theater memory _theater = Information.theaters[concertInfo.concertTheater];
 
         for(uint32 i = 0; i < _theater.vipNum; i++){
             Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, msg.sender);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
         for(uint32 i = _theater.vipNum; i < _theater.rNum + _theater.vipNum; i++){
             Information.Seat memory seat = Information.Seat("R", i, _rPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, msg.sender);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
         for(uint32 i = _theater.rNum + _theater.vipNum; i < _theater.aNum  + _theater.rNum + _theater.vipNum; i++){
             Information.Seat memory seat = Information.Seat("A", i, _aPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, msg.sender);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
 
-        MyConcerts[msg.sender] = Tickets;
+        Information.MyConcerts[msg.sender] = Tickets;
         
     }
 
@@ -69,4 +69,51 @@ contract RegisterConcert is Information{
         }
         return sell;
     }
+    
+    /**
+    * @dev Test 용 
+    */
+    function getConcertInfo() public returns (string memory){
+        return concertInfo.concertName;
+    }
+
+    function getTickets(address _sender) public returns (Information.Ticket[] memory){
+        return MyConcerts[_sender];
+    }
+
+    function getConcertTicketTest(address _sender) public returns (bool[] memory){
+        Information.Ticket[] memory _tickets = MyConcerts[_sender];
+        uint8 _concertTheater = _tickets[0].concertInfo.concertTheater;
+        uint16 length = Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].rNum + Information.theaters[_concertTheater].aNum; 
+        bool[] memory sell = new bool[](length);
+        for(uint i = 0; i < length; i++){
+            if (_tickets[i].isSold){/**이미 팔렸으면 true */
+                sell[i] = false;     
+            }else{
+                sell[i] = true;
+            }
+        }
+        return sell;
+    }
+
+    function setTicketsTest(uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice, address payable _sender) public{
+        Information.Theater memory _theater = Information.theaters[concertInfo.concertTheater];
+
+        for(uint32 i = 0; i < _theater.vipNum; i++){
+            Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+        }
+        for(uint32 i = _theater.vipNum; i < _theater.rNum + _theater.vipNum; i++){
+            Information.Seat memory seat = Information.Seat("R", i, _rPrice);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+        }
+        for(uint32 i = _theater.rNum + _theater.vipNum; i < _theater.aNum  + _theater.rNum + _theater.vipNum; i++){
+            Information.Seat memory seat = Information.Seat("A", i, _aPrice);
+            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+        }
+
+        MyConcerts[_sender] = Tickets;
+        
+    }
+
 }
