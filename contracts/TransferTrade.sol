@@ -40,14 +40,18 @@ contract TransferTrade is Information{
     function getTicket(address register, string memory _type, uint8 _number) public returns (Information.Ticket memory){
         Information.Ticket[] memory temp = Information.MyConcerts[register];
         uint8 _concertTheater = temp[0].concertInfo.concertTheater;
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
+        
         if(stringCompare(_type, "VIP")){
             return temp[_number];
         }
         if(stringCompare(_type, "R")){
-            return temp[_number + Information.theaters[_concertTheater].vipNum];
+            return temp[_number + vipN];
         }
         if(stringCompare(_type, "A")){
-            return temp[_number + Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].rNum];
+            return temp[_number + vipN + rN];
         }
     }
 
@@ -61,14 +65,17 @@ contract TransferTrade is Information{
         Information.Ticket[] memory temp = Information.MyConcerts[register];
         uint16 index;
         uint8 _concertTheater = temp[0].concertInfo.concertTheater;
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
         if(stringCompare(_type, "VIP")){
             index = _number;
         }
         if(stringCompare(_type, "R")){
-            index = _number + Information.theaters[_concertTheater].vipNum;
+            index = _number + vipN;
         }
         if(stringCompare(_type, "A")){
-            index = _number + Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].rNum;
+            index = _number + vipN + rN;
         }
         temp[index] = ticket;
     }

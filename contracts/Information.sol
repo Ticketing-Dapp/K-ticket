@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 contract Information {
     mapping(address => Ticket[]) public MyConcerts;
+
     struct Ticket {
         ConcertInfo concertInfo;
         Seat seat;
@@ -40,6 +41,12 @@ contract Information {
         uint8 rNum;
         uint8 aNum;
     }
+    uint8[] vipNum = [3, 3, 4] ;
+    uint8[] rNum = [5, 5, 6];
+    uint8[] aNum = [7, 4 ,8];
+    
+
+
 /**
     이거 안됨
     Theater one = Theater(3,5,7);

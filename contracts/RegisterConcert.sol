@@ -29,18 +29,20 @@ contract RegisterConcert is Information{
     *      UI에서 받은 데이터와 setConcertInfo()로 생성한 ConcertInfo 구조체로 Ticket 구조체를 만들고 Tickets 배열을 생성한다.
     *      그리고 이를 공연등록자가 관리할 수 있도록 MyConcerts 매핑에 추가한다.
     */
-    function setTickets(uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice) public{
-        Information.Theater memory _theater = Information.theaters[concertInfo.concertTheater];
-
-        for(uint32 i = 0; i < _theater.vipNum; i++){
+    function setTickets(uint8 _concertTheater, uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice) public{
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
+        
+        for(uint32 i = 0; i < vipN; i++){
             Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
-        for(uint32 i = _theater.vipNum; i < _theater.rNum + _theater.vipNum; i++){
+        for(uint32 i = vipN; i < rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("R", i, _rPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
-        for(uint32 i = _theater.rNum + _theater.vipNum; i < _theater.aNum  + _theater.rNum + _theater.vipNum; i++){
+        for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("A", i, _aPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
         }
@@ -58,7 +60,10 @@ contract RegisterConcert is Information{
     function getConcertTicket() public returns (bool[] memory){
         Information.Ticket[] memory _tickets = MyConcerts[msg.sender];
         uint8 _concertTheater = _tickets[0].concertInfo.concertTheater;
-        uint16 length = Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].rNum + Information.theaters[_concertTheater].aNum; 
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
+        uint16 length = vipN + rN + aN; 
         bool[] memory sell = new bool[](length);
         for(uint i = 0; i < length; i++){
             if (_tickets[i].isSold){/**이미 팔렸으면 true */
@@ -84,8 +89,10 @@ contract RegisterConcert is Information{
     function getConcertTicketTest(address _sender) public returns (bool[] memory){
         Information.Ticket[] memory _tickets = MyConcerts[_sender];
         uint8 _concertTheater = _tickets[0].concertInfo.concertTheater;
-        uint16 length = Information.theaters[_concertTheater].vipNum + Information.theaters[_concertTheater].rNum + Information.theaters[_concertTheater].aNum; 
-        bool[] memory sell = new bool[](length);
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
+        uint16 length = vipN + rN + aN; bool[] memory sell = new bool[](length);
         for(uint i = 0; i < length; i++){
             if (_tickets[i].isSold){/**이미 팔렸으면 true */
                 sell[i] = false;     
@@ -96,18 +103,19 @@ contract RegisterConcert is Information{
         return sell;
     }
 
-    function setTicketsTest(uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice, address payable _sender) public{
-        Information.Theater memory _theater = Information.theaters[concertInfo.concertTheater];
-
-        for(uint32 i = 0; i < _theater.vipNum; i++){
+    function setTicketsTest(uint8 _concertTheater, uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice, address payable _sender) public{
+        uint8 vipN = Information.vipNum[_concertTheater];
+        uint8 rN = Information.rNum[_concertTheater];
+        uint8 aN = Information.aNum[_concertTheater];
+        for(uint32 i = 0; i < vipN; i++){
             Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
         }
-        for(uint32 i = _theater.vipNum; i < _theater.rNum + _theater.vipNum; i++){
+        for(uint32 i = vipN; i < rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("R", i, _rPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
         }
-        for(uint32 i = _theater.rNum + _theater.vipNum; i < _theater.aNum  + _theater.rNum + _theater.vipNum; i++){
+        for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("A", i, _aPrice);
             Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
         }
