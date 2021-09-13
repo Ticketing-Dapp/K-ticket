@@ -14,6 +14,9 @@ contract RegisterConcert is Information{
     Information.Time public time;
     Information.ConcertInfo public concertInfo;
 
+    event settingConcertInfo(string concertName);
+    event checkConcertInfo(string concertName);
+
     /**
     * @dev 입력받은 콘서트 정보를 설정한다.
     *      UI에서 받은 데이터로 ConcertInfo 구조체를 생성한다.
@@ -22,6 +25,7 @@ contract RegisterConcert is Information{
         date = Information.Date(_year, _month, _day);
         time = Information.Time(_hour, _minute);
         concertInfo = Information.ConcertInfo(_concertName, _concertTheater, date, time);
+        emit settingConcertInfo(_concertName);
     }
 
     /**
@@ -79,6 +83,7 @@ contract RegisterConcert is Information{
     * @dev Test 용 
     */
     function getConcertInfo() public returns (string memory){
+        emit checkConcertInfo(concertInfo.concertName);
         return concertInfo.concertName;
     }
 
