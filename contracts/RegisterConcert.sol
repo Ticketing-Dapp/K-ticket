@@ -16,6 +16,9 @@ contract RegisterConcert is Information{
 
     event settingConcertInfo(string concertName);
     event checkConcertInfo(string concertName);
+    event checkTicketCreate(string concertName);
+    event checkSetTicket(string concertName);
+    
 
     /**
     * @dev 입력받은 콘서트 정보를 설정한다.
@@ -40,15 +43,15 @@ contract RegisterConcert is Information{
         
         for(uint32 i = 0; i < vipN; i++){
             Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
         }
         for(uint32 i = vipN; i < rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("R", i, _rPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
         }
         for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("A", i, _aPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, payable(msg.sender));
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
         }
 
         Information.MyConcerts[msg.sender] = Tickets;
@@ -82,13 +85,22 @@ contract RegisterConcert is Information{
     /**
     * @dev Test 용 
     */
-    function getConcertInfo() public returns (string memory){
+    function getConcertInfo() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8){
         emit checkConcertInfo(concertInfo.concertName);
-        return concertInfo.concertName;
+        return (concertInfo.concertName, concertInfo.concertTheater, 
+                concertInfo.date.year, concertInfo.date.month, concertInfo.date.day,
+                concertInfo.time.hour, concertInfo.time.minute);
     }
 
-    function getTickets(address _sender) public returns (Information.Ticket[] memory){
-        return MyConcerts[_sender];
+    function getTickets(address _sender) public returns (string memory, string memory, uint32, uint32, bool, bool, string memory, string memory, uint32, uint32, bool, bool){
+        Information.Ticket[] memory t = MyConcerts[_sender];
+        uint256 len = t.length-1;
+        emit checkTicketCreate(t[0].concertInfo.concertName);
+        return (t[0].concertInfo.concertName, 
+                t[0].seat.typeOfSeat, t[0].seat.seatNumber, t[0].seat.ticketPrice, 
+                t[0].isTransferred, t[0].isSold, t[len].concertInfo.concertName, 
+                t[len].seat.typeOfSeat, t[len].seat.seatNumber, t[len].seat.ticketPrice, 
+                t[len].isTransferred, t[len].isSold);
     }
 
     function getConcertTicketTest(address _sender) public returns (bool[] memory){
@@ -112,17 +124,18 @@ contract RegisterConcert is Information{
         uint8 vipN = Information.vipNum[_concertTheater];
         uint8 rN = Information.rNum[_concertTheater];
         uint8 aN = Information.aNum[_concertTheater];
+        emit checkSetTicket(concertInfo.concertName);
         for(uint32 i = 0; i < vipN; i++){
             Information.Seat memory seat = Information.Seat("VIP", i, _vipPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
         }
         for(uint32 i = vipN; i < rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("R", i, _rPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
         }
         for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
             Information.Seat memory seat = Information.Seat("A", i, _aPrice);
-            Tickets[i] = Information.Ticket(concertInfo, seat, false, false, _sender);
+            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
         }
 
         MyConcerts[_sender] = Tickets;
