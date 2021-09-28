@@ -1,30 +1,24 @@
-pragma solidity ^0.8.7;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.7<0.9.0;
 pragma experimental ABIEncoderV2;
 
 import "./Information.sol";
-import "./RegisterConcert.sol";
 
 contract TransferTrade is Information{
 
-    mapping(address => Information.Ticket) public TicketStore; // 1인 1티켓
-    mapping(address => Information.Ticket) public TransferTicketStore; // 양도 거래 중인 ticket
+    mapping(address => Ticket) public TicketStore; // 1인 1티켓
+    mapping(address => Ticket) public TransferTicketStore; // 양도 거래 중인 ticket
 
     // 상수
     uint256 constant internal TICKET_PRICE = 5 * 10 ** 15;
 
     // 변수
     address payable public transferee;
-    Information.Ticket public ticket;
+    Ticket public ticket;
 
-    /** 디폴트 티켓 생성
-    Seat public defaultSeat = Seat("VIP", 30, TICKET_PRICE);
-    Date public defaultDate = Date(2021, 6, 18);
-    Time public defaultTime = Time(18, 0);
-    ConcertInfo public defaultConcertInfo = ConcertInfo("ohmygirl", defaultDate, defaultTime);
-    Ticket public defaultTicket = Ticket(defaultConcertInfo, defaultSeat, false);
-
-    address defaultAddr = 0x1c049AC608CB6B8B748Ed0449B9d592b9CDe2314;
-    */
+    // 이벤트
+    event CheckAddress(address _sender);
+    event GetConcertTheater(uint8 number);
 
     // 생성자
     constructor() public payable {
@@ -37,12 +31,12 @@ contract TransferTrade is Information{
     * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     * @return Ticket을 반환한다.
     */
-    function getTicket(address register, string memory _type, uint8 _number) public returns (Information.Ticket memory){
-        Information.Ticket[] memory temp = Information.MyConcerts[register];
+    function getTicket(address register, string memory _type, uint8 _number) public returns (Ticket memory){
+        Ticket[] memory temp = MyConcerts[register];
         uint8 _concertTheater = temp[0].concertInfo.concertTheater;
-        uint8 vipN = Information.vipNum[_concertTheater];
-        uint8 rN = Information.rNum[_concertTheater];
-        uint8 aN = Information.aNum[_concertTheater];
+        uint8 vipN = vipNum[_concertTheater];
+        uint8 rN = rNum[_concertTheater];
+        uint8 aN = aNum[_concertTheater];
         
         if(stringCompare(_type, "VIP")){
             return temp[_number];
@@ -62,12 +56,12 @@ contract TransferTrade is Information{
     * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function setTicket(address register, string memory _type, uint8 _number) public{
-        Information.Ticket[] memory temp = Information.MyConcerts[register];
+        Ticket[] memory temp = MyConcerts[register];
         uint16 index;
         uint8 _concertTheater = temp[0].concertInfo.concertTheater;
-        uint8 vipN = Information.vipNum[_concertTheater];
-        uint8 rN = Information.rNum[_concertTheater];
-        uint8 aN = Information.aNum[_concertTheater];
+        uint8 vipN = vipNum[_concertTheater];
+        uint8 rN = rNum[_concertTheater];
+        uint8 aN = aNum[_concertTheater];
         if(stringCompare(_type, "VIP")){
             index = _number;
         }
@@ -152,7 +146,7 @@ contract TransferTrade is Information{
     * @return 콘서트정보와 좌석정보를 반환한다.
     */ 
     function getMyTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, string memory, uint32, uint32){
-        Information.Ticket memory myticket = TicketStore[msg.sender];
+        Ticket memory myticket = TicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
         
         return (myticket.concertInfo.concertName, myticket.concertInfo.concertTheater, myticket.concertInfo.date.year,
@@ -165,13 +159,37 @@ contract TransferTrade is Information{
     * @return 콘서트정보와 좌석정보를  반환한다.
     */ 
     function getMyTransferringTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, string memory, uint32, uint32){
-        Information.Ticket memory myticket = TransferTicketStore[msg.sender];
+        Ticket memory myticket = TransferTicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
         
         return (myticket.concertInfo.concertName, myticket.concertInfo.concertTheater, myticket.concertInfo.date.year,
         myticket.concertInfo.date.month, myticket.concertInfo.date.day, myticket.concertInfo.time.hour, myticket.concertInfo.time.minute,
         myticket.seat.typeOfSeat, myticket.seat.seatNumber, myticket.seat.ticketPrice);
     }
+
+    /**
+    테스트 용
+     */
+    // function getTicketTest (address _sender, string memory _type, uint8 _number) public returns (string memory, string memory, uint32, uint32, bool, bool){
+    //     emit CheckAddress(_sender);
+    //     Ticket[] memory t = MyConcerts[_sender];
+    //     emit GetConcertTheater(t[0].concertInfo.concertTheater);
+    //     uint8 _concertTheater = t[0].concertInfo.concertTheater;
+    //     uint8 vipN = vipNum[_concertTheater];
+    //     uint8 rN = rNum[_concertTheater];
+    //     uint8 aN = aNum[_concertTheater];
+    //     uint256 number = _number + vipN;
+    //     return (t[number].concertInfo.concertName, 
+    //             t[number].seat.typeOfSeat, t[number].seat.seatNumber, t[number].seat.ticketPrice, 
+    //             t[number].isTransferred, t[number].isSold);
+    // }
+
+    function getTicketTest (address _sender, string memory _type, uint8 _number) public {
+        emit CheckAddress(_sender);
+        Ticket[] memory t = MyConcerts[_sender];
+        emit GetConcertTheater(t[0].concertInfo.concertTheater);
+    }
+
 }
 
  
