@@ -35,10 +35,18 @@ contract TransferTrade{
         concertInfo = Information.ConcertInfo(msg.sender, _concertName, _concertTheater, date, time);
     }
 
+    /**
+    * @dev 입력받은 콘서트 날짜 정보를 설정한다.
+    *      UI에서 받은 데이터로 Date 구조체를 생성한다.
+    */
     function setDate(uint16 _year, uint8 _month, uint8 _day) public{
         date = Information.Date(_year, _month, _day);   
     }
 
+    /**
+    * @dev 입력받은 콘서트 시간 정보를 설정한다.
+    *      UI에서 받은 데이터로 Time 구조체를 생성한다.
+    */
     function setTime(uint8 _hour, uint8 _minute) public{
         time = Information.Time(_hour, _minute);  
     }
@@ -71,9 +79,9 @@ contract TransferTrade{
     }
 
     /**
-    * @dev 티켓의 판매 여부를 확인할 수 있도록 UI에 제공하기 위한 함수
+    * @dev 공연 등록자가 티켓의 판매 여부를 확인할 수 있도록 UI에 제공하기 위한 함수
     *      공연 등록은 하나밖에 할 수 없기 때문에, 인자로 받는 것 없이 공연 등록자의 주소만 있으면 확인할 수 있다.
-    *      UI에서 입력받은 concertInfo를 이용하여 티켓별로 판매되었으면 true, 판매되지 않았으면 false 값을 가지는 bool 배열을 생성한다.
+           MyConcerts 매핑에서 공연 등록자의 공연을 가져온다. 해당 공연의 티켓의 판매여부가 저장된 bool 배열을 생성한다. (판매되었으면 true, 판매되지 않았으면 false)
     * @return  판매 여부가 저장된 bool 배열을 반환한다.
     */
     function getConcertTicket() public returns (bool[] memory){
