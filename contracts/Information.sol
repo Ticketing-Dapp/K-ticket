@@ -12,6 +12,7 @@ library Information {
     }
 
     struct ConcertInfo {
+        address concertRegister;
         string concertName;
         uint8 concertTheater;
         Date date;
