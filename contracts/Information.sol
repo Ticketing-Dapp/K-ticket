@@ -2,9 +2,7 @@
 pragma solidity >=0.8.7<0.9.0;
 pragma experimental ABIEncoderV2;
 
-contract Information {
-    mapping(address => Ticket[]) public MyConcerts;
-
+library Information {
     struct Ticket {
         ConcertInfo concertInfo;
         Seat seat;
@@ -21,7 +19,7 @@ contract Information {
     }
 
     struct Seat {
-        string typeOfSeat;
+        uint8 typeOfSeat;
         uint32 seatNumber;
         uint32 ticketPrice;
     }
@@ -42,9 +40,6 @@ contract Information {
         uint8 rNum;
         uint8 aNum;
     }
-    uint8[] vipNum = [3, 3, 4] ;
-    uint8[] rNum = [5, 5, 6];
-    uint8[] aNum = [7, 4 ,8];
     
 
 

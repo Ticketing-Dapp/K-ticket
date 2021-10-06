@@ -1,4 +1,4 @@
-const Register = artifacts.require("RegisterConcert");
+const Register = artifacts.require("TransferTrade");
 
 contract('Register', async(accounts) => {
     var registerInstance;
@@ -11,7 +11,9 @@ contract('Register', async(accounts) => {
     describe('RegisterTest', function(){
         it('register concert test', async function(){  
             //setting ConcertInfo
-            await registerInstance.setConcertInfo("EXO", 2, 2021, 9, 10, 19, 30);
+            await registerInstance.setDate(2021, 9, 10);
+            await registerInstance.setTime(19, 30);
+            await registerInstance.setConcertInfo("EXO", 2);
             let value = await registerInstance.getConcertInfo.call();
             assert.equal("EXO", value[0], "Not equal");
             assert.equal("2", value[1].toString(), "Not equal");
@@ -25,8 +27,13 @@ contract('Register', async(accounts) => {
             await registerInstance.setTicketsTest(2, 100000, 70000, 50000, defaultSender);
             let valu = await registerInstance.getTickets.call(defaultSender);
             console.log(valu);
+
+            let boolValue = await registerInstance.getConcertTicketTest.call(defaultSender);
+            console.log(boolValue);
+
             
         })
+        
         
     })
 });
