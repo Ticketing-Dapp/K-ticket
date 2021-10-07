@@ -33,7 +33,7 @@ library Information {
     struct Seat {
         uint8 typeOfSeat;
         uint32 seatNumber;
-        uint32 ticketPrice;
+        uint256 ticketPrice;
     }
     /**
      * @dev 날짜 정보를 담은 구조체

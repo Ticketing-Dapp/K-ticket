@@ -6,9 +6,11 @@ import "./Information.sol";
 
 contract TransferTrade{
 
-    mapping(address => Information.Ticket[]) public MyConcerts;
-    mapping(address => Information.Ticket) public TicketStore; // 1인 1티켓
-    mapping(address => Information.Ticket) public TransferTicketStore; // 양도 거래 중인 ticket
+    mapping(address => Information.Ticket[]) public MyConcerts;         // 공연등록자 -> 공연. 공연등록자가 자신의 공연을 관리하기 위해 사용
+    mapping(address => Information.Ticket) public TicketStore;          // 1인 1티켓
+    mapping(address => Information.Ticket) public TransferTicketStore;  // 양도 거래 중인 ticket
+    mapping(address => Information.Ticket) public ticket;               // 
+    mapping(address => Information.ConcertInfo) public concertInfo;     //
 
     // 상수
     uint8[] vipNum = [3, 3, 4] ;
@@ -17,65 +19,41 @@ contract TransferTrade{
     uint8 VIP = 0;
     uint8 R = 1;
     uint8 A = 2;
+
+    // 이벤트
+    event checkSeat(uint8 _type, uint32 _number);
+
     
-    // 변수
-    address payable public transferee;
-    Information.Ticket public ticket;
-
-    Information.Ticket[] public Tickets;
-    Information.Date public date;
-    Information.Time public time;
-    Information.ConcertInfo public concertInfo;    
-
     /**
     * @dev 입력받은 콘서트 정보를 설정한다.
     *      UI에서 받은 데이터로 ConcertInfo 구조체를 생성한다.
     */
-    function setConcertInfo(string memory _concertName, uint8 _concertTheater) public {
-        concertInfo = Information.ConcertInfo(msg.sender, _concertName, _concertTheater, date, time);
-    }
-
-    /**
-    * @dev 입력받은 콘서트 날짜 정보를 설정한다.
-    *      UI에서 받은 데이터로 Date 구조체를 생성한다.
-    */
-    function setDate(uint16 _year, uint8 _month, uint8 _day) public{
-        date = Information.Date(_year, _month, _day);   
-    }
-
-    /**
-    * @dev 입력받은 콘서트 시간 정보를 설정한다.
-    *      UI에서 받은 데이터로 Time 구조체를 생성한다.
-    */
-    function setTime(uint8 _hour, uint8 _minute) public{
-        time = Information.Time(_hour, _minute);  
+    function setConcertInfo(string memory _concertName, uint8 _concertTheater, uint16 _year, uint8 _month, uint8 _day, uint8 _hour, uint8 _minute) public {
+       Information.Date memory date = Information.Date(_year, _month, _day);
+       Information.Time memory time = Information.Time(_hour, _minute); 
+       concertInfo[msg.sender] = Information.ConcertInfo(msg.sender, _concertName, _concertTheater, date, time);
     }
 
     /**
     * @dev 입력받은 티켓 정보를 설정한다.
-    *      UI에서 받은 데이터와 setConcertInfo()로 생성한 ConcertInfo 구조체로 Ticket 구조체를 만들고 Tickets 배열을 생성한다.
-    *      그리고 이를 공연등록자가 관리할 수 있도록 MyConcerts 매핑에 추가한다.
+    *      UI에서 받은 데이터와 setConcertInfo()로 생성한 ConcertInfo 구조체로 Ticket 구조체를 MyConcerts 매핑에 추가한다.
     */
-    function setTickets(uint8 _concertTheater, uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice) public{
+    function setTickets(uint8 _concertTheater, uint256 _vipPrice, uint256 _rPrice, uint256 _aPrice) public{
         uint8 vipN = vipNum[_concertTheater];
         uint8 rN = rNum[_concertTheater];
         uint8 aN = aNum[_concertTheater];
-        
         for(uint32 i = 0; i < vipN; i++){
             Information.Seat memory seat = Information.Seat(VIP, i, _vipPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
+            MyConcerts[msg.sender].push(Information.Ticket(concertInfo[msg.sender], seat, false, false, payable(msg.sender)));
         }
         for(uint32 i = vipN; i < rN + vipN; i++){
-            Information.Seat memory seat = Information.Seat(R, i, _rPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
+            Information.Seat memory seat = Information.Seat(R, i-vipN, _rPrice);
+            MyConcerts[msg.sender].push(Information.Ticket(concertInfo[msg.sender], seat, false, false, payable(msg.sender)));
         }
         for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
-            Information.Seat memory seat = Information.Seat(A, i, _aPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, payable(msg.sender)));
+            Information.Seat memory seat = Information.Seat(A, i-vipN-rN, _aPrice);
+            MyConcerts[msg.sender].push(Information.Ticket(concertInfo[msg.sender], seat, false, false, payable(msg.sender)));
         }
-
-        MyConcerts[msg.sender] = Tickets;
-        
     }
 
     /**
@@ -101,14 +79,9 @@ contract TransferTrade{
         }
         return sell;
     }  
-   
-    // 생성자
-    constructor() public payable {
-        transferee = payable(msg.sender);
-    }
 
     /**
-    * @dev Ticket 가져오기
+    * @dev ticket 매핑에 자신의 주소를 key로 가져온 ticket을 매핑한다. 
     * @param register 공연 등록자의 지갑 주소를 알면 티켓을 찾아올 수 있다.
     * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
@@ -119,16 +92,21 @@ contract TransferTrade{
         uint8 rN = rNum[_concertTheater];
         
         if(_type==VIP){
-            ticket = temp[_number];
+            ticket[msg.sender] = temp[_number];
         }
         else if(_type==R){
-            ticket = temp[_number + vipN];
+            ticket[msg.sender] = temp[_number + vipN];
         }
         else if(_type==A){
-            ticket = temp[_number + vipN + rN];
+            ticket[msg.sender] = temp[_number + vipN + rN];
         }
     }
 
+    /**
+    * @dev 공연 등록자에게 변경된 티켓 정보를 반영한다. 
+    * @param register 공연 등록자의 지갑 주소를 알면 티켓을 찾아올 수 있다.
+    * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
+    */
     function setTicket(address register, uint8 _type, uint32 _number) public{
         Information.Ticket[] storage temp = MyConcerts[register];
         uint32 index;
@@ -144,7 +122,7 @@ contract TransferTrade{
         else if(_type==A){
             index = _number + vipN + rN;
         }
-        temp[index] = ticket;
+        temp[index] = ticket[msg.sender];
     }
 
     /**
@@ -154,10 +132,10 @@ contract TransferTrade{
     * Seat (_type, _number) : 티켓을 특정하기 위해 Seat 구조체의 변수 내용을 파라미터로 받는다.
     */
     function buyTicket(address register, uint8 _type, uint32 _number) public payable {
-        require(ticket.isSold == false, "Ticket is already sold.");
         getTicket(register, _type, _number);
+        require(ticket[msg.sender].isSold == false, "Ticket is already sold.");
         pay();
-        TicketStore[msg.sender] = ticket;
+        TicketStore[msg.sender] = ticket[msg.sender];
         setTicket(register, _type, _number);
     }
 
@@ -168,14 +146,16 @@ contract TransferTrade{
     */
     function transferTicket(address trader) public payable returns (bool){
         // + trader가 글을 올린 상태여야 함.
-        require(ticket.isTransferred == false, "Already ticket is transferred");
-        ticket = TicketStore[trader];
-        transferPay();
+        require(ticket[trader].isTransferred == false, "Already ticket is transferred");
+        ticket[trader] = TicketStore[trader];
+        transferPay(trader);
+        TicketStore[msg.sender] = ticket[trader];
+        delete ticket[trader];
         delete TransferTicketStore[trader];
-        delete TransferTicketStore[transferee];
+        delete TransferTicketStore[msg.sender];
         delete TicketStore[trader];
-        TicketStore[transferee] = ticket;
-        setTicket(ticket.concertInfo.concertRegister, ticket.seat.typeOfSeat, ticket.seat.seatNumber);
+        
+        setTicket(TicketStore[msg.sender].concertInfo.concertRegister, TicketStore[msg.sender].seat.typeOfSeat, TicketStore[msg.sender].seat.seatNumber);
         return true;
     }
 
@@ -185,10 +165,10 @@ contract TransferTrade{
     */
     function pay() public payable {
         // 현재 가나슈를 실행중이 아니라서 ticket info의 owner 정보가 없어서 주석처리함
-        require(msg.value == ticket.seat.ticketPrice, "Not enough ETH");
-        ticket.isSold = true;
-        ticket.ticketOwner.transfer(ticket.seat.ticketPrice);
-        ticket.ticketOwner = payable(msg.sender);
+        require(msg.value == ticket[msg.sender].seat.ticketPrice, "Not enough ETH");
+        ticket[msg.sender].isSold = true;
+        ticket[msg.sender].ticketOwner.transfer(ticket[msg.sender].seat.ticketPrice);
+        ticket[msg.sender].ticketOwner = payable(msg.sender);
     }
 
     /**
@@ -196,20 +176,20 @@ contract TransferTrade{
     *      양도거래가 진행되는 상태이므로, isTransferred를 true로 변경하여 양도거래가 중복되지 않도록 한다.
     *      양도거래 진행 중이므로 TransferTicketStore에 추가한다.
     */
-    function transferPay() public payable {
+    function transferPay(address trader) public payable {
         // 현재 가나슈를 실행중이 아니라서 ticket info의 owner 정보가 없어서 주석처리함
-        require(msg.value == ticket.seat.ticketPrice, "Not enough ETH");
-        ticket.isTransferred = true;
-        TransferTicketStore[msg.sender] = ticket;
-        ticket.ticketOwner.transfer(ticket.seat.ticketPrice);
-        ticket.ticketOwner = transferee;
+        require(msg.value == ticket[trader].seat.ticketPrice, "Not enough ETH");
+        ticket[trader].isTransferred = true;
+        TransferTicketStore[msg.sender] = ticket[trader];
+        ticket[trader].ticketOwner.transfer(ticket[trader].seat.ticketPrice);
+        ticket[trader].ticketOwner = payable(msg.sender);
     }
 
     /** 
     * @dev 마이페이지에서 소유하고 있는 티켓을 보여준다.
     * @return 콘서트정보와 좌석정보를 반환한다.
     */ 
-    function getMyTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, uint8, uint32, uint32){
+    function getMyTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, uint8, uint32, uint256){
         Information.Ticket memory myticket = TicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
         
@@ -222,7 +202,7 @@ contract TransferTrade{
     * @dev 마이페이지에서 양도거래 중인 티켓을 보여준다.
     * @return 콘서트정보와 좌석정보를  반환한다.
     */ 
-    function getMyTransferringTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, uint8, uint32, uint32){
+    function getMyTransferringTicket() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, uint8, uint32, uint256){
         Information.Ticket memory myticket = TransferTicketStore[msg.sender];
         require(myticket.seat.seatNumber != 0, "empty");
         
@@ -231,123 +211,19 @@ contract TransferTrade{
         myticket.seat.typeOfSeat, myticket.seat.seatNumber, myticket.seat.ticketPrice);
     }
 
-    // buyer가 구매한 티켓을 양도거래 신청을 함.
-    function registerPost(address buyer) public {
-        TransferTicketStore[buyer] = TicketStore[buyer];
+    /** 
+    * @dev 양도거래를 신청한다.
+    */ 
+    function registerPost() public {
+        TransferTicketStore[msg.sender] = TicketStore[msg.sender];
     }
 
 
-     /**
-    * @dev Test 용 
-    */
-    function getConcertInfo() public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8){
-        return (concertInfo.concertName, concertInfo.concertTheater, 
-                concertInfo.date.year, concertInfo.date.month, concertInfo.date.day,
-                concertInfo.time.hour, concertInfo.time.minute);
-    }
-
-    function getTickets(address _sender) public returns (string memory, uint8, uint32, uint32, bool, bool, string memory, uint8, uint32, uint32, bool, bool){
-        Information.Ticket[] memory t = MyConcerts[_sender];
-        uint256 len = t.length-1;
-        return (t[0].concertInfo.concertName, 
-                t[0].seat.typeOfSeat, t[0].seat.seatNumber, t[0].seat.ticketPrice, 
-                t[0].isTransferred, t[0].isSold, t[len].concertInfo.concertName, 
-                t[len].seat.typeOfSeat, t[len].seat.seatNumber, t[len].seat.ticketPrice, 
-                t[len].isTransferred, t[len].isSold);
-    }
-
-    function getConcertTicketTest(address _sender) public returns (bool[] memory){
-        Information.Ticket[] memory _tickets = MyConcerts[_sender];
-        uint8 _concertTheater = _tickets[0].concertInfo.concertTheater;
-        uint8 vipN = vipNum[_concertTheater];
-        uint8 rN = rNum[_concertTheater];
-        uint8 aN = aNum[_concertTheater];
-        uint16 length = vipN + rN + aN; bool[] memory sell = new bool[](length);
-        for(uint i = 0; i < length; i++){
-            if (_tickets[i].isSold){/**이미 팔렸으면 true */
-                sell[i] = false;     
-            }else{
-                sell[i] = true;
-            }
-        }
-        return sell;
-    }
-
-    function setTicketsTest(uint8 _concertTheater, uint32 _vipPrice, uint32 _rPrice, uint32 _aPrice, address payable _sender) public{
-        uint8 vipN = vipNum[_concertTheater];
-        uint8 rN = rNum[_concertTheater];
-        uint8 aN = aNum[_concertTheater];
-        for(uint32 i = 0; i < vipN; i++){
-            Information.Seat memory seat = Information.Seat(VIP, i, _vipPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
-        }
-        for(uint32 i = vipN; i < rN + vipN; i++){
-            Information.Seat memory seat = Information.Seat(R, i, _rPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
-        }
-        for(uint32 i = rN + vipN; i < aN  + rN + vipN; i++){
-           Information. Seat memory seat = Information.Seat(A, i, _aPrice);
-            Tickets.push(Information.Ticket(concertInfo, seat, false, false, _sender));
-        }
-
-        MyConcerts[_sender] = Tickets;
-        
-    }
-    
-    function getTicketTest () public returns (uint8, uint32){
-        return (ticket.seat.typeOfSeat, ticket.seat.seatNumber);
-    }
-
-    function buyTicketTest (address register, uint8 _type, uint32 _number, address _sender) public payable {
-        require(ticket.isSold == false, "Ticket is already sold.");
-        getTicket(register, _type, _number);
-        payTest(_sender);
-        TicketStore[_sender] = ticket;
-        setTicket(register, _type, _number);
-    }
-
-    function payTest(address _sender) public payable{
-        //require(msg.value == ticket.seat.ticketPrice, "Not enough ETH");
-        ticket.isSold = true;
-        ticket.ticketOwner.transfer(ticket.seat.ticketPrice);
-        ticket.ticketOwner = payable(_sender);
-    }
-
-    // buyer가 구매한 티켓을 양도거래 신청을 함.
-    function registerPostTest(address buyer) public {
-        TransferTicketStore[buyer] = TicketStore[buyer];
-    }
-
-    function transferTicketTest(address buyer, address trader) public payable returns (bool){
-        // buyer : 티켓의 원래 주인, trader : 양수인
-        require(ticket.isTransferred == false, "Already ticket is transferred");
-        //TransferTicketStore[trader] = ticket; 양도인이 글을 올렸을 때 해야 함
-        ticket = TicketStore[buyer];
-        transferPayTest(trader);
-        delete TransferTicketStore[buyer];
-        delete TransferTicketStore[trader];
-        delete TicketStore[buyer];
-        TicketStore[trader] = ticket;
-        setTicket(ticket.concertInfo.concertRegister, ticket.seat.typeOfSeat, ticket.seat.seatNumber);
-        return true;
-    }
-
-    function transferPayTest(address trader) public payable {
-        // 현재 가나슈를 실행중이 아니라서 ticket info의 owner 정보가 없어서 주석처리함
-        // require(msg.value == ticket.seat.ticketPrice, "Not enough ETH");
-        ticket.isTransferred = true;
-        TransferTicketStore[trader] = ticket;
-        ticket.ticketOwner.transfer(ticket.seat.ticketPrice);
-        ticket.ticketOwner = payable(trader);
-    }
-
-    function getMyTicketTest(address trader) public returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8, uint8, uint32, uint32){
-        Information.Ticket memory myticket = TicketStore[trader];
-        require(myticket.seat.seatNumber != 0, "empty");
-        
-        return (myticket.concertInfo.concertName, myticket.concertInfo.concertTheater, myticket.concertInfo.date.year,
-        myticket.concertInfo.date.month, myticket.concertInfo.date.day, myticket.concertInfo.time.hour, myticket.concertInfo.time.minute,
-        myticket.seat.typeOfSeat, myticket.seat.seatNumber, myticket.seat.ticketPrice);
+    /** test 용 */
+    function getConcertInfo() public view returns (string memory, uint8, uint16, uint8, uint8, uint8, uint8){
+        return (concertInfo[msg.sender].concertName, concertInfo[msg.sender].concertTheater, 
+                concertInfo[msg.sender].date.year, concertInfo[msg.sender].date.month, concertInfo[msg.sender].date.day,
+                concertInfo[msg.sender].time.hour, concertInfo[msg.sender].time.minute);
     }
 
 }
