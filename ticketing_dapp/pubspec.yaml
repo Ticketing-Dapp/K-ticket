@@ -1,0 +1,47 @@
+name: ticketing_dapp
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  google_sign_in: ^5.0.7
+  firebase_core: ^1.7.0
+  firebase_auth: ^3.0.1
+  cloud_firestore: ^2.4.0
+  firebase_storage: ^10.0.2
+
+
+  carousel_slider: ^4.0.0
+  modal_progress_hud_nsn: ^0.1.0-nullsafety-1
+  syncfusion_flutter_datepicker: ^19.2.55
+  image_picker: ^0.8.3+2
+
+  intl: ^0.17.0
+
+  cupertino_icons: ^1.0.3
+
+  provider: ^6.0.1
+  web3dart: ^2.3.2
+  http: ^0.13.4
+  web_socket_channel: ^2.1.0
+
+  qr_flutter: ^4.0.0
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/src/artifacts/

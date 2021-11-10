@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "381631570211",
+    "project_id": "cnu-ticket-dapp",
+    "storage_bucket": "cnu-ticket-dapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381631570211:android:03baba3e7a1ed305b72c96",
+        "android_client_info": {
+          "package_name": "com.example.ticketing_dapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "381631570211-2pgb4na3todjr5cc763btqalsia6eink.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnrCU30vz0_7HPTd_Q0YWE3LiHL0_CXc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381631570211-2pgb4na3todjr5cc763btqalsia6eink.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
