@@ -197,13 +197,15 @@ Future<bool> uploadTrading(String title, String time, int seat, String price, St
     await contractLink.setPrice(new BigInt.from(id), new BigInt.from(seat - 1), new BigInt.from(int.parse(price)));
 
     await FirebaseFirestore.instance.collection('tradingConcert').doc(_user.uid).set({
-      'title': title,
-      'time': time,
-      'price': price,
-      'seat' : seat,
-      'poster': poster,
-      'id': id,
-      'host': _user.uid,
+      id.toString() + " " + seat.toString(): {
+        'title': title,
+        'time': time,
+        'price': price,
+        'seat' : seat,
+        'poster': poster,
+        'id': id,
+        'host': _user.uid,
+      },
     }, SetOptions(merge: true));
     return Future.value(true);
   } catch (e) {

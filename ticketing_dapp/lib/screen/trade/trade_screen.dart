@@ -242,19 +242,21 @@ Future<void> getTradingConcert(Map<String, Set<TradingConcert>> data) async {
       .then((QuerySnapshot querySnapshot) {
     querySnapshot.docs.forEach((doc) {
       Map<String, dynamic> concertData = doc.data()! as Map<String, dynamic>;
-      TradingConcert tmp = TradingConcert.fromMap({
-        'title': concertData['title'],
-        'poster': concertData['poster'],
-        'kinds': '콘서트',
-        'id': concertData['id'],
-        'seat': concertData['seat'],
-        'price': concertData['price'],
-        'time': concertData['time'],
-        'host': concertData['host'],
-      });
+      concertData.keys.forEach((seat) {
+        TradingConcert tmp = TradingConcert.fromMap({
+          'title': concertData[seat]['title'],
+          'poster': concertData[seat]['poster'],
+          'kinds': '콘서트',
+          'id': concertData[seat]['id'],
+          'seat': concertData[seat]['seat'],
+          'price': concertData[seat]['price'],
+          'time': concertData[seat]['time'],
+          'host': concertData[seat]['host'],
+        });
 
-      data['total']!.add(tmp);
-      data['concert']!.add(tmp);
+        data['total']!.add(tmp);
+        data['concert']!.add(tmp);
+      });
     });
   });
 }
