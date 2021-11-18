@@ -43,8 +43,7 @@ class _MoreState extends State<More> {
                 padding: EdgeInsets.symmetric(vertical: 10.0),
                 child: GestureDetector(
                   onTap: () async {
-                    // var flag = await ContractLinking.checkMyTicket(new BigInt.from(100), new BigInt.from(data[index].seat));
-                    var flag = true;
+                    var flag = await ContractLinking.checkMyTicket(new BigInt.from(100), new BigInt.from(data[index].seat));
                     if (flag == true) {
                       Navigator.pushNamed(context, Entrance.id, arguments: {
                         'title': data[index].title,
@@ -172,16 +171,18 @@ Future<List<Ticket>> getMyTicket() async {
       .collection(_user.uid)
       .get()
       .then((QuerySnapshot querySnapshot) {
-    Map<String, dynamic> ticketDatas = querySnapshot.docs[0].data() as Map<String, dynamic>;
-    ticketDatas.keys.forEach((element) {
-      Ticket tmp = Ticket.fromMap({
-        'title': ticketDatas[element]['title'],
-        'seat': ticketDatas[element]['seat'] + 1,
-        'time': ticketDatas[element]['time'],
-        'poster': ticketDatas[element]['poster'],
-        'id': ticketDatas[element]['id'].toString(),
-      });
-      data.add(tmp);
+        querySnapshot.docs.forEach((doc) {
+          Map<String, dynamic> ticketDatas = doc.data() as Map<String, dynamic>;
+          ticketDatas.keys.forEach((element) {
+            Ticket tmp = Ticket.fromMap({
+              'title': ticketDatas[element]['title'],
+              'seat': ticketDatas[element]['seat'] + 1,
+              'time': ticketDatas[element]['time'],
+              'poster': ticketDatas[element]['poster'],
+              'id': ticketDatas[element]['id'].toString(),
+            });
+            data.add(tmp);
+        });
     });
   });
 

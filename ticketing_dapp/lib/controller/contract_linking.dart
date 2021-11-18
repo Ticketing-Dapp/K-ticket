@@ -8,7 +8,7 @@ import 'package:web_socket_channel/io.dart';
 class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "HTTP://10.0.2.2:7545";
   final String _wsUrl = "ws://10.0.2.2:7545/";
-  final String _privateKey = "d4fc1efc06696e8c45d83b5d17970d229676b43b01cfc4a8ddf2e6cf377589b8";
+  final String _privateKey = "8a90e3e554536211032390f57dc3354770cd88d182a9a674a29b5dce491a2649";
 
   bool checkMyTicketBool = false;
   // _client variable will be used to establish a connection to the ethereum rpc node with the help of WebSocket.

@@ -198,7 +198,7 @@ Future<bool> tradeProcess(TradingConcert data, ContractLinking contractLinking) 
   CollectionReference collection = FirebaseFirestore.instance.collection('tradingConcert');
 
   try {
-    // await contractLinking.transferTicket(new BigInt.from(data.id), new BigInt.from(data.seat - 1));
+    await contractLinking.transferTicket(new BigInt.from(data.id), new BigInt.from(data.seat - 1));
 
     await FirebaseFirestore.instance.collection(_user.uid).doc(data.id.toString()).set({
       data.seat.toString() : {

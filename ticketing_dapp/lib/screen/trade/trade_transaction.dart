@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ticketing_dapp/constants.dart';
 import 'package:ticketing_dapp/controller/contract_linking.dart';
-import 'package:ticketing_dapp/screen/trade/list_my_tickets.dart';
 
 class TradeTransaction extends StatefulWidget {
   static const String id = 'trade_transaction';
