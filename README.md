@@ -1,7 +1,10 @@
 # K-ticket
 
+## Introduce
+> This is ticketing dapp which is ensure trust trade. 
+
 ## pre-condition
-+ solidity
++ solidity ^0.8.3
 + ganache
 + flutter
 
